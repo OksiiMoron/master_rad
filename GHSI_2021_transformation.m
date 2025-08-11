@@ -3,8 +3,13 @@ GHSI_2019_table = readtable("mr_GHSI_demo_data_transf_out.csv", VariableNamingRu
 GHSI_2021_table = readtable("GHSI_2021_large_table.csv", VariableNamingRule="preserve", ReadRowNames=true);
 
 % filtriranje po zajednickim drzavama
-idx = ismember(GHSI_2019_table.Properties.RowNames, GHSI_2021_table.Properties.RowNames);
+idx = ismember(GHSI_2021_table.Properties.RowNames, GHSI_2019_table.Properties.RowNames);
 GHSI_2021_table_filtered = GHSI_2021_table(idx, :);
+
+isequal(GHSI_2021_table_filtered.Properties.RowNames, GHSI_2019_table.Properties.RowNames);
+GHSI_2021_table_filtered = GHSI_2021_table_filtered(GHSI_2019_table.Properties.RowNames, :);
+isequal(GHSI_2021_table_filtered.Properties.RowNames, GHSI_2019_table.Properties.RowNames);
+
 
 % Izdvajanje imena kolona i drzava
 countryNames = GHSI_2021_table_filtered.Properties.RowNames;
@@ -34,6 +39,7 @@ end
 GHSI_2021_matrix_transformed = DnRoutlier(GHSI_2021_matrix_transformed);
 
 GHSI_2021_table_transformed = array2table(GHSI_2021_matrix_transformed, VariableNames=col_names, RowNames=countryNames);
+
 
 
 %[appendix]{"version":"1.0"}
