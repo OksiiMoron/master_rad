@@ -7,23 +7,43 @@ prosperitet = GHSI_2019_matrix(:, [10:11, 13:15]);
 starost = GHSI_2019_matrix(:, [12, 18:19]);
 bolesti = GHSI_2019_matrix(:, [22,23,end]);
 
-% Normalizacija podataka
-GHSI_2021_normalized = normalize(GHSI_2021);
-GHSI_2019_normalized = normalize(GHSI_2019);
-prosperitet_normalized = normalize(prosperitet);
-starost_normalized = normalize(starost);
-bolesti_normalized = normalize(bolesti);
+% grupisanje podataka kako bi mogli da ih sprovedemo kroz for loop
+grupe = {GHSI_2021, GHSI_2019, prosperitet, starost, bolesti};
+nazivi = {'GHSI_2021', 'GHSI_2019', 'prosperitet', 'starost', 'bolesti'};
+rezultati = struct();
 
-[coeff, score, latent, tsquared, explained] = pca(GHSI_2021_normalized);
-pcs_treshold(explained, 85) %[output:865febb9]
+for i= 1:length(grupe)
+    % normalizovanje podataka
+    norm_podaci = normalize(grupe{i});
+
+    % PCA
+    [coeff, score, latent, tsquared, explained] = pca(norm_podaci);
+    nPCs = pcs_treshold(explained, 85);
+    
+    % grupisanje rezultata PCA u strukturu odakle mozemo po potrebi da
+    % uzmemo sta nam treba za dalju analizu
+    rezultati.(nazivi{i}).coeff = coeff(:, 1:nPCs);
+    rezultati.(nazivi{i}).score = score(:, 1:nPCs);
+    rezultati.(nazivi{i}).latent = latent(1:nPCs);
+    rezultati.(nazivi{i}).explained = explained(1:nPCs);
+    rezultati.(nazivi{i}).nPCs = nPCs;
+end
+
+%[output:493700b6]
+% odavde mozemo da ,,vadimo" po potrebi sta nam treba 
+disp(rezultati.bolesti.score) %[output:43992e00]
+disp(rezultati.GHSI_2021.coeff)
 
 
 
 %[appendix]{"version":"1.0"}
 %---
 %[metadata:view]
-%   data: {"layout":"onright"}
+%   data: {"layout":"onright","rightPanelPercent":35.9}
 %---
-%[output:865febb9]
-%   data: {"dataType":"textualVariable","outputData":{"name":"ans","value":"3"}}
+%[output:493700b6]
+%   data: {"dataType":"text","outputData":{"text":"    0.4421    0.0051   -0.0213\n    0.3902   -0.1027   -0.4185\n    0.3701    0.4557    0.2123\n    0.3595   -0.1615    0.8123\n    0.3984   -0.1760   -0.1045\n    0.3345    0.6028   -0.2539\n    0.3398   -0.6011   -0.2100\n\n","truncated":false}}
+%---
+%[output:43992e00]
+%   data: {"dataType":"text","outputData":{"text":"    2.8608    0.1147\n   -1.0309   -0.2500\n    1.2348    0.1631\n   -2.7207    0.3429\n   -1.2663   -0.0801\n    0.7208   -0.3081\n   -1.7264    0.3886\n    1.5905    1.0513\n    1.2776   -0.4435\n   -0.5427    0.7638\n    2.3619    0.1781\n   -3.1466    0.2703\n   -2.2460    0.2090\n   -0.7260    0.5236\n    1.3504   -0.1431\n   -0.7336    0.3123\n   -1.3701    0.4915\n   -0.5554    0.5279\n   -1.1821    0.4614\n    0.2229   -0.7002\n   -1.3519   -0.0295\n    1.3788    0.4694\n   -1.5112   -0.2979\n    2.3791    1.2268\n   -1.9308   -0.1008\n   -0.3093   -1.7758\n    1.5176   -0.0412\n   -2.2635   -0.7551\n   -1.2969   -0.2326\n    0.6547    0.7627\n   -2.3016    0.4770\n    1.2461   -0.4579\n    0.8891    0.4192\n    1.5636   -0.6832\n   -1.1763    0.4287\n   -0.2644    0.5620\n    0.9794   -1.0989\n    0.8526   -0.7702\n    1.2346   -1.1991\n    2.1669    1.3298\n   -1.9334   -0.3810\n   -0.1193    1.2881\n   -2.3086   -0.6090\n   -1.7152    1.2096\n   -1.2928    0.3304\n   -0.6930   -0.2343\n    0.3946    0.7844\n   -2.2374    0.4226\n    1.0987   -1.1883\n    0.3359    0.1594\n    1.0274    1.2745\n    0.7178   -1.4151\n    0.2255    0.3974\n    0.2784    0.1469\n    1.3874   -1.2094\n    1.2910   -0.5825\n   -0.9140   -1.0718\n   -0.4845    0.5451\n    1.3289   -0.2016\n    2.3256   -0.4730\n   -1.4842    0.2653\n    1.1403   -0.7028\n    1.8013    0.0592\n    0.5488   -0.7808\n   -0.1336   -0.2359\n    1.6354    1.2087\n   -2.2377   -0.5311\n   -2.7131   -0.3005\n    2.4676    0.2733\n   -1.2630   -0.1099\n   -1.2233   -0.9810\n    1.0190   -1.2645\n    1.1355   -0.9550\n    1.1692    1.7764\n    1.5176    0.0227\n   -0.6840    0.9397\n    1.1807   -0.4852\n   -2.4072   -0.6264\n    0.9430   -0.2005\n    0.4412    0.7627\n    0.2082    1.3182\n   -0.9061   -0.6212\n    1.3270   -0.0733\n   -0.5433    0.3521\n    1.5179   -0.4091\n\n","truncated":false}}
 %---
