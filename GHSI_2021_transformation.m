@@ -1,4 +1,5 @@
 %[text] ## Uvoz i transformacija podataka
+clear
 GHSI_2019_table = readtable("mr_GHSI_demo_data_transf_out.csv", VariableNamingRule="preserve", ReadRowNames=true);
 GHSI_2021_table = readtable("GHSI_2021_large_table.csv", VariableNamingRule="preserve", ReadRowNames=true);
 
@@ -40,7 +41,7 @@ GHSI_2021_matrix_transformed = DnRoutlier(GHSI_2021_matrix_transformed);
 
 GHSI_2021_table_transformed = array2table(GHSI_2021_matrix_transformed, VariableNames=col_names, RowNames=countryNames) %[output:7b3254d7]
 
-save("GHSI_2021_transformed_data.mat", 'GHSI_2021_matrix_transformed', 'GHSI_2021_table_transformed');
+save("GHSI_2021_transformed_data.mat", 'GHSI_2021_matrix_transformed', 'GHSI_2021_table_transformed', 'GHSI_2019_table');
 
 
 %[appendix]{"version":"1.0"}
