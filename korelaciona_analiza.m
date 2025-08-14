@@ -63,9 +63,34 @@ end
 save('noPC_vs_mr_tables.mat', varlist_noPCmr{:});
 
 %[text] ## Statisticki znacajno korelisane PC i varijable sa m/r
+% statisticki znacajne PC
+PC_p_values = {P_GHSI_2021_table, P_GHSI_2019_table, P_bolesti_table, P_prosperitet_table, P_startos_table};
+significantPCs = {};
+for i=1:length(PC_p_values)
+    
+    current_pcGroup = PC_p_values{i}{:,:}; %trenutna tabela
+    pvec = current_pcGroup(1:end-1, end); %svi PC vs mr
+    idx = find(pvec < 0.05); % indeks p-vrednosti ispod 0.05
+    names = PC_p_values{i}.Properties.RowNames(1:end-1); % imena kolona za trenutnu tabelu
+    
+    significantPCs{end+1} = table(names(idx), pvec(idx), 'VariableNames', {'Var','p'});
+    
+end
 
+%Statisticki zancajne varijable koje nisu usle u PCA
+noPC_p_values = {P_IE_table, P_RE_table, P_OB_table, P_SM_table, P_IN_table, P_BCG_table, P_ON_table};
+significantVars = {};
+for i = 1:length(noPC_p_values)
+    current_varGroup = noPC_p_values{i}{:,:}; % trenutna tabela
+    pvec_noPC = current_varGroup(1:end-1, end); % svi varijable vs mr
+    idx_noPC = find(pvec_noPC < 0.05); % indeks p-vrednosti ispod 0.05
+    names_noPC = noPC_p_values{i}.Properties.RowNames(1:end-1); % imena kolona za trenutnu tabelu
+    
+    significantVars{end+1} = table(names(idx), pvec(idx), 'VariableNames', {'Var','p'});
+  
+end
 
-
+%[output:38b9f9e0]
 
 %[appendix]{"version":"1.0"}
 %---
@@ -74,4 +99,7 @@ save('noPC_vs_mr_tables.mat', varlist_noPCmr{:});
 %---
 %[output:59a16715]
 %   data: {"dataType":"text","outputData":{"text":"    1.0000    0.8948    0.8423    0.8194    0.8992    0.6941    0.7038    0.9948   -0.0185   -0.0390\n    0.8948    1.0000    0.6820    0.6617    0.8003    0.6194    0.6613    0.9064    0.0410   -0.0945\n    0.8423    0.6820    1.0000    0.5672    0.6436    0.5713    0.4466    0.8077   -0.2468   -0.4204\n    0.8194    0.6617    0.5672    1.0000    0.7503    0.5299    0.5246    0.8258    0.0231    0.4586\n    0.8992    0.8003    0.6436    0.7503    1.0000    0.5545    0.6838    0.9099    0.1528    0.1072\n    0.6941    0.6194    0.5713    0.5299    0.5545    1.0000    0.2978    0.7152   -0.5646    0.1036\n    0.7038    0.6613    0.4466    0.5246    0.6838    0.2978    1.0000    0.7291    0.5847   -0.1181\n    0.9948    0.9064    0.8077    0.8258    0.9099    0.7152    0.7291    1.0000   -0.0000   -0.0000\n   -0.0185    0.0410   -0.2468    0.0231    0.1528   -0.5646    0.5847   -0.0000    1.0000   -0.0000\n   -0.0390   -0.0945   -0.4204    0.4586    0.1072    0.1036   -0.1181   -0.0000   -0.0000    1.0000\n\n","truncated":false}}
+%---
+%[output:38b9f9e0]
+%   data: {"dataType":"tabular","outputData":{"columns":7,"header":"1×7 cell array","name":"significantVars","rows":1,"type":"cell","value":[["1×2 table","1×2 table","1×2 table","1×2 table","1×2 table","1×2 table","1×2 table"]]}}
 %---
