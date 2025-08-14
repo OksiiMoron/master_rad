@@ -2,7 +2,7 @@
 clear
 load("GHSI_2021_transformed_data.mat");
 load("PCA_data.mat");
-GHSI_2019_matrix = table2array(GHSI_2019_table);
+% GHSI_2019_matrix = table2array(GHSI_2019_table);
 %[text] ## Korelaciona analiza izmedju rezultat PCA i odgovarajucih podataka
 pocetni_podaci = {GHSI_2021, GHSI_2019, starost, bolesti, prosperitet};
 podaci_pca = {GHSI_2021_PCS, GHSI_2019_PCS, starost_PCS, bolesti_PCS, prosperitet_PCS};
@@ -10,53 +10,68 @@ nazivi_grupaVsPC = {'GHSI_2021_vsPC', 'GHSI_2019_vsPC', 'starost_vsPC', 'bolesti
 rezultati_CORR_PC = struct();
 for i = 1:length(podaci_pca)
     pc_data = table2array(podaci_pca{i});
-    combined_data = [pc_data, pocetni_podaci{i}];
+    combined_data = [pocetni_podaci{i},pc_data];
     [coeff, p_values] = corr(combined_data);
 
     rezultati_CORR_PC.(nazivi_grupaVsPC{i}).coeff = coeff;
     rezultati_CORR_PC.(nazivi_grupaVsPC{i}).p_values = p_values;
 end
 
-disp(rezultati_CORR_PC.GHSI_2019_vsPC.coeff) %[output:7878a149]
+disp(rezultati_CORR_PC.GHSI_2019_vsPC.coeff); %[output:59a16715]
 
 %[text] ## Korelacija izmedju znacajnih PCs i m/r
-m_r = GHSI_2019_matrix(:,18);
-nazivi_PCvsmr = {'GHSI_2021_PCvsMR', 'GHSI_2019_PCvsMR', 'starost_vsMR', 'bolesti_vsMR', 'prosperitet_vsMR'};
-rezultati_PC_mr = struct();
-for i = 1:length(podaci_pca)
-    pc_data = table2array(podaci_pca{i});
-    [coeff, p_values] = corr(pc_data, m_r);
+PC_data = {GHSI_2021_PCS, GHSI_2019_PCS, bolesti_PCS, prosperitet_PCS, starost_PCS};
+nazivi = {'GHSI_2021','GHSI_2019','bolesti','prosperitet', 'startos'};
+m_r = GHSI_2019_table{:,1};
+for i = 1:length(PC_data)
+    X = [PC_data{i}{:,:}, m_r];
+    nazivi_PCmr = [PC_data{i}.Properties.VariableNames, 'mr'];
 
-    rezultati_PC_mr.(nazivi_PCvsmr{i}).coeff = coeff;
-    rezultati_PC_mr.(nazivi_PCvsmr{i}).p_values = p_values;
+    [r, p] = corr(X);
+    %eval izvrsava kod dok sprintf daje mogucnost modularne promene
+    %varijable koju kreiramo
+    eval(sprintf('R_%s_table = array2table(r, ''VariableNames'', nazivi_PCmr, ''RowNames'', nazivi_PCmr);', nazivi{i}));
+    eval(sprintf('P_%s_table = array2table(p, ''VariableNames'', nazivi_PCmr, ''RowNames'', nazivi_PCmr);', nazivi{i}));
 end
-
-disp(rezultati_PC_mr.GHSI_2019_PCvsMR.coeff) %[output:35582e6d]
-
+varlist_PCmr = {};
+for i = 1:length(nazivi)
+    % dodajemo na kraj varlist sve tabele
+    varlist_PCmr{end+1} = sprintf('R_%s_table', nazivi{i}); 
+    varlist_PCmr{end+1} = sprintf('P_%s_table', nazivi{i});
+end
+save('PC_vs_mr_tables.mat', varlist_PCmr{:});
 %[text] ## Korelacija varijabli koje nisu usle u PCA i m/r
-var_noPCA = GHSI_2019_matrix(:, [16,17,20,21,24,26]);
-nazivi_noPCAvsmr = {'IEvsMR', 'REvsMR', 'OBvsMR', 'SMvsMR', 'INvsMR', 'ONvsMR'};
-rezultati_noPCA_mr = struct();
-for i = 1:width(var_noPCA)
-    [coeff, p_values] = corr(var_noPCA(:,i), m_r);
+% izdvajanje kolona koje nisu usli u PCA analizu
+vars_noPCA = {'IE','RE','OB','SM','IN','BCG','ON'};
+[ok, idx] = ismember(vars_noPCA, GHSI_2019_table.Properties.VariableNames);
+x_noPCA = GHSI_2019_table(:, idx);
 
-    rezultati_noPCA_mr.(nazivi_noPCAvsmr{i}).coeff = coeff;
-    rezultati_noPCA_mr.(nazivi_noPCAvsmr{i}).p_values = p_values;
+
+for i = 1:length(vars_noPCA)
+    xi = GHSI_2019_table{:, idx(i)};      % numeric kolona
+    X  = [xi, m_r]; 
+    nazivi_noPCmr = [string(vars_noPCA{i}), 'mr'];
+    [r, p] = corr(X);
+    eval(sprintf('R_%s_table = array2table(r, ''VariableNames'', nazivi_noPCmr, ''RowNames'', nazivi_noPCmr);', vars_noPCA{i}));
+    eval(sprintf('P_%s_table = array2table(p, ''VariableNames'', nazivi_noPCmr, ''RowNames'', nazivi_noPCmr);', vars_noPCA{i}));
 end
+varlist_noPCmr = {};
+for i = 1:length(vars_noPCA)
+    varlist_noPCmr{end+1} = sprintf('R_%s_table', vars_noPCA{i}); 
+    varlist_noPCmr{end+1} = sprintf('P_%s_table', vars_noPCA{i});
+end
+save('noPC_vs_mr_tables.mat', varlist_noPCmr{:});
 
-%[output:070f7c2e]
+%[text] ## Statisticki znacajno korelisane PC i varijable sa m/r
+
+
+
 
 %[appendix]{"version":"1.0"}
 %---
 %[metadata:view]
 %   data: {"layout":"onright"}
 %---
-%[output:7878a149]
-%   data: {"dataType":"text","outputData":{"text":"    1.0000   -0.0000   -0.0000    0.9948    0.9064    0.8077    0.8258    0.9099    0.7152    0.7291\n   -0.0000    1.0000   -0.0000   -0.0185    0.0410   -0.2468    0.0231    0.1528   -0.5646    0.5847\n   -0.0000   -0.0000    1.0000   -0.0390   -0.0945   -0.4204    0.4586    0.1072    0.1036   -0.1181\n    0.9948   -0.0185   -0.0390    1.0000    0.8948    0.8423    0.8194    0.8992    0.6941    0.7038\n    0.9064    0.0410   -0.0945    0.8948    1.0000    0.6820    0.6617    0.8003    0.6194    0.6613\n    0.8077   -0.2468   -0.4204    0.8423    0.6820    1.0000    0.5672    0.6436    0.5713    0.4466\n    0.8258    0.0231    0.4586    0.8194    0.6617    0.5672    1.0000    0.7503    0.5299    0.5246\n    0.9099    0.1528    0.1072    0.8992    0.8003    0.6436    0.7503    1.0000    0.5545    0.6838\n    0.7152   -0.5646    0.1036    0.6941    0.6194    0.5713    0.5299    0.5545    1.0000    0.2978\n    0.7291    0.5847   -0.1181    0.7038    0.6613    0.4466    0.5246    0.6838    0.2978    1.0000\n\n","truncated":false}}
-%---
-%[output:35582e6d]
-%   data: {"dataType":"text","outputData":{"text":"    0.6582\n    0.4558\n   -0.1000\n\n","truncated":false}}
-%---
-%[output:070f7c2e]
-%   data: {"dataType":"textualVariable","outputData":{"name":"coeff","value":"-0.6224"}}
+%[output:59a16715]
+%   data: {"dataType":"text","outputData":{"text":"    1.0000    0.8948    0.8423    0.8194    0.8992    0.6941    0.7038    0.9948   -0.0185   -0.0390\n    0.8948    1.0000    0.6820    0.6617    0.8003    0.6194    0.6613    0.9064    0.0410   -0.0945\n    0.8423    0.6820    1.0000    0.5672    0.6436    0.5713    0.4466    0.8077   -0.2468   -0.4204\n    0.8194    0.6617    0.5672    1.0000    0.7503    0.5299    0.5246    0.8258    0.0231    0.4586\n    0.8992    0.8003    0.6436    0.7503    1.0000    0.5545    0.6838    0.9099    0.1528    0.1072\n    0.6941    0.6194    0.5713    0.5299    0.5545    1.0000    0.2978    0.7152   -0.5646    0.1036\n    0.7038    0.6613    0.4466    0.5246    0.6838    0.2978    1.0000    0.7291    0.5847   -0.1181\n    0.9948    0.9064    0.8077    0.8258    0.9099    0.7152    0.7291    1.0000   -0.0000   -0.0000\n   -0.0185    0.0410   -0.2468    0.0231    0.1528   -0.5646    0.5847   -0.0000    1.0000   -0.0000\n   -0.0390   -0.0945   -0.4204    0.4586    0.1072    0.1036   -0.1181   -0.0000   -0.0000    1.0000\n\n","truncated":false}}
 %---
