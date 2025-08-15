@@ -2,7 +2,7 @@
 clear
 load("GHSI_2021_transformed_data.mat");
 load("PCA_data.mat");
-% GHSI_2019_matrix = table2array(GHSI_2019_table);
+
 %[text] ## Korelaciona analiza izmedju rezultat PCA i odgovarajucih podataka
 pocetni_podaci = {GHSI_2021, GHSI_2019, starost, bolesti, prosperitet};
 podaci_pca = {GHSI_2021_PCS, GHSI_2019_PCS, starost_PCS, bolesti_PCS, prosperitet_PCS};
@@ -17,7 +17,7 @@ for i = 1:length(podaci_pca)
     rezultati_CORR_PC.(nazivi_grupaVsPC{i}).p_values = p_values;
 end
 
-disp(rezultati_CORR_PC.GHSI_2019_vsPC.coeff); %[output:59a16715]
+
 
 %[text] ## Korelacija izmedju znacajnih PCs i m/r
 PC_data = {GHSI_2021_PCS, GHSI_2019_PCS, bolesti_PCS, prosperitet_PCS, starost_PCS};
@@ -64,42 +64,63 @@ save('noPC_vs_mr_tables.mat', varlist_noPCmr{:});
 
 %[text] ## Statisticki znacajno korelisane PC i varijable sa m/r
 % statisticki znacajne PC
-PC_p_values = {P_GHSI_2021_table, P_GHSI_2019_table, P_bolesti_table, P_prosperitet_table, P_startos_table};
-significantPCs = {};
-for i=1:length(PC_p_values)
-    
-    current_pcGroup = PC_p_values{i}{:,:}; %trenutna tabela
-    pvec = current_pcGroup(1:end-1, end); %svi PC vs mr
-    idx = find(pvec < 0.05); % indeks p-vrednosti ispod 0.05
-    names = PC_p_values{i}.Properties.RowNames(1:end-1); % imena kolona za trenutnu tabelu
-    
-    significantPCs{end+1} = table(names(idx), pvec(idx), 'VariableNames', {'Var','p'});
-    
+PC_P_tables = {P_GHSI_2021_table, P_GHSI_2019_table, P_bolesti_table, P_prosperitet_table, P_startos_table};
+signifcant_PCS = string.empty;
+for i = 1:length(PC_P_tables)
+    current_table = PC_P_tables{i};
+    pvec = current_table{1:end-1, end};
+    names = string(current_table.Properties.RowNames(1:end-1));
+    signifcant_PCS = [signifcant_PCS; names(pvec < 0.05)];
+end
+signifcant_PCS = unique(signifcant_PCS);
+
+% statisticki znacajne varijable koje nisu usle u PCA
+noPC_P_tables = {P_IE_table, P_RE_table, P_OB_table, P_SM_table, P_IN_table, P_BCG_table, P_ON_table};
+noPC_names    = {'IE','RE','OB','SM','IN','BCG','ON'};
+significant_noPCvars = string.empty;
+for i = 1:length(noPC_P_tables)
+    current_table = noPC_P_tables{i};
+    if current_table{1,end} < 0.05
+        significant_noPCvars = [significant_noPCvars; string(noPC_names{i})];
+    end
 end
 
-%Statisticki zancajne varijable koje nisu usle u PCA
-noPC_p_values = {P_IE_table, P_RE_table, P_OB_table, P_SM_table, P_IN_table, P_BCG_table, P_ON_table};
-significantVars = {};
-for i = 1:length(noPC_p_values)
-    current_varGroup = noPC_p_values{i}{:,:}; % trenutna tabela
-    pvec_noPC = current_varGroup(1:end-1, end); % svi varijable vs mr
-    idx_noPC = find(pvec_noPC < 0.05); % indeks p-vrednosti ispod 0.05
-    names_noPC = noPC_p_values{i}.Properties.RowNames(1:end-1); % imena kolona za trenutnu tabelu
-    
-    significantVars{end+1} = table(names(idx), pvec(idx), 'VariableNames', {'Var','p'});
-  
-end
+% Tabela svih znacajnih PCs, varijabli i m/r
+% Iskoristili smo idx nasih znacajnih PCs i varijabli kako bi uzeli te
+% kolone iz njihovih maticnih tabela
+all_PCs = [GHSI_2021_PCS, GHSI_2019_PCS, bolesti_PCS, prosperitet_PCS, starost_PCS];
+significant_PC_table = all_PCs(:, cellstr(signifcant_PCS));
+significant_noPC_table = GHSI_2019_table(:, cellstr(significant_noPCvars));
+mr_table = GHSI_2019_table(:,1);
 
-%[output:38b9f9e0]
+significant_table = [significant_PC_table, significant_noPC_table, mr_table] %[output:245056f4]
+
+%[text] 
+%[text] ## Heatmap
+
+
+% %% --- korelacije i heatmap ---
+% X = sel_all_tbl{:,:};
+% [R,P] = corr(X, 'Rows','complete');
+% 
+% names = sel_all_tbl.Properties.VariableNames;
+% R_table = array2table(R, 'VariableNames', names, 'RowNames', names);
+% P_table = array2table(P, 'VariableNames', names, 'RowNames', names);
+% 
+% % snimi rezultate i heatmap
+% save('significant_corr.mat', 'sel_all_tbl','R_table','P_table');
+% 
+% figure
+% h = heatmap(names, names, R)
+% title('Korelacije: selektovane varijable (PC & noPCA) + mr');
+
+
 
 %[appendix]{"version":"1.0"}
 %---
 %[metadata:view]
 %   data: {"layout":"onright"}
 %---
-%[output:59a16715]
-%   data: {"dataType":"text","outputData":{"text":"    1.0000    0.8948    0.8423    0.8194    0.8992    0.6941    0.7038    0.9948   -0.0185   -0.0390\n    0.8948    1.0000    0.6820    0.6617    0.8003    0.6194    0.6613    0.9064    0.0410   -0.0945\n    0.8423    0.6820    1.0000    0.5672    0.6436    0.5713    0.4466    0.8077   -0.2468   -0.4204\n    0.8194    0.6617    0.5672    1.0000    0.7503    0.5299    0.5246    0.8258    0.0231    0.4586\n    0.8992    0.8003    0.6436    0.7503    1.0000    0.5545    0.6838    0.9099    0.1528    0.1072\n    0.6941    0.6194    0.5713    0.5299    0.5545    1.0000    0.2978    0.7152   -0.5646    0.1036\n    0.7038    0.6613    0.4466    0.5246    0.6838    0.2978    1.0000    0.7291    0.5847   -0.1181\n    0.9948    0.9064    0.8077    0.8258    0.9099    0.7152    0.7291    1.0000   -0.0000   -0.0000\n   -0.0185    0.0410   -0.2468    0.0231    0.1528   -0.5646    0.5847   -0.0000    1.0000   -0.0000\n   -0.0390   -0.0945   -0.4204    0.4586    0.1072    0.1036   -0.1181   -0.0000   -0.0000    1.0000\n\n","truncated":false}}
-%---
-%[output:38b9f9e0]
-%   data: {"dataType":"tabular","outputData":{"columns":7,"header":"1×7 cell array","name":"significantVars","rows":1,"type":"cell","value":[["1×2 table","1×2 table","1×2 table","1×2 table","1×2 table","1×2 table","1×2 table"]]}}
+%[output:245056f4]
+%   data: {"dataType":"tabular","outputData":{"columnNames":["GHSI_2019_PC1","GHSI_2021_PC1","bolesti_PC1","prosperitet_PC1","starost_PC1","OB","IN","ON","mr"],"columns":9,"dataTypes":["double","double","double","double","double","double","double","double","double"],"header":"85×9 table","name":"significant_table","rowNames":["Afghanistan","Andorra","Armenia","Australia","Austria","Azerbaijan","Belgium","Bangladesh","Bosnia and Herzegovina","Bolivia","Central African Republic","Canada","Switzerland","Chile"],"rows":85,"type":"table","value":[["-2.3186","-2.7667","2.8608","-3.7945","-2.6558","-3.4782","-6","3.6109","-3.2619"],["-2.5983","-1.7468","-1.0309","1.7314","2.9558","-2.5096","-5.3479","3.4965","-2.7374"],["0.6247","2.8001","1.2348","-0.6902","-0.1324","-2.8736","-6.6633","3.4965","-3.8918"],["4.5557","4.2700","-2.7207","3.0247","1.2173","-2.1861","-6.0498","3.2189","-4.2474"],["2.1461","2.2162","-1.2663","1.5995","2.1791","-2.8792","-6.0745","2.5649","-3.1912"],["-2.2499","-1.6122","0.7208","-0.9034","-0.7336","-2.8904","-6","3.2958","-4.2120"],["2.5862","2.5471","-1.7264","2.6361","1.9869","-2.7600","-5.5946","3.0910","-1.6582"],["-2.1041","-1.5752","1.5905","-2.5601","-1.9221","-3.5351","-6.2610","3.9120","-4.2155"],["-0.5596","-1.4433","1.2776","-0.2231","0.5194","-2.9957","-6.4420","3.5835","-3.4692"],["-1.7197","-2.5649","-0.5427","-1.1698","-1.1473","-2.8736","-6","3.8067","-2.7235"],["-3.0693","-4.8602","2.3619","-3.8174","-2.2763","-3.4144","-7.2595","4.3438","-4.3258"],["4.5760","4.1432","-3.1466","2.5759","1.1935","-2.1401","-6.1968","2.4849","-2.4089"],["3.4524","2.5558","-2.2460","2.3274","1.8862","-2.9124","-6.5803","2.5649","-2.7658"],["1.9304","2.0366","-0.7260","0.6245","0.6427","-2.2925","-6.3561","2.9444","-3.5657"]]}}
 %---
