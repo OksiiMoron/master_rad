@@ -86,32 +86,28 @@ for i = 1:length(noPC_P_tables)
 end
 
 % Tabela svih znacajnih PCs, varijabli i m/r
+% Iskoristili smo idx nasih znacajnih PCs i varijabli kako bi uzeli te
+% kolone iz njihovih maticnih tabela
 all_PCs = [GHSI_2021_PCS, GHSI_2019_PCS, bolesti_PCS, prosperitet_PCS, starost_PCS];
 significant_PC_table = all_PCs(:, cellstr(signifcant_PCS));
 significant_noPC_table = GHSI_2019_table(:, cellstr(significant_noPCvars));
-mr_table = GHSI_2019_table(:,1); %[output:66d0367b]
+mr_table = GHSI_2019_table(:,1);
+
+significant_table = [significant_PC_table, significant_noPC_table, mr_table]; %[output:245056f4]
 
 %[text] 
 %[text] ## Heatmap
+X = significant_table{:,:}; 
+[r,p] = corr(X);
+names = significant_table.Properties.VariableNames; %[output:1f508243]
 
-% %% --- formiraj jedinstvenu tabelu selektovanih (PC + noPCA + mr) ---
-% PC_all = [GHSI_2021_PCS GHSI_2019_PCS starost_PCS bolesti_PCS prosperitet_PCS];   % sve PC kolone
-% sel_PC_tbl    = PC_all(:, cellstr(selPC));                 % može i 0 kolona ako nema
-% sel_noPCA_tbl = GHSI_2019_table(:, cellstr(selNoP));       % može i 0 kolona
-% mr_tbl        = GHSI_2019_table(:,1);                      % m/r
-% 
-% sel_all_tbl = [sel_PC_tbl sel_noPCA_tbl mr_tbl];           % sve selektovano + mr (poslednja kolona)
-% 
-% %% --- korelacije i heatmap ---
-% X = sel_all_tbl{:,:};
-% [R,P] = corr(X, 'Rows','complete');
-% 
-% names = sel_all_tbl.Properties.VariableNames;
-% R_table = array2table(R, 'VariableNames', names, 'RowNames', names);
-% P_table = array2table(P, 'VariableNames', names, 'RowNames', names);
+r_table = array2table(r, VariableNames=names, RowNames=names);
+p_table = array2table(p, VariableNames=names, RowNames=names);
+
+save('significant_corr.mat', "significant_table", "r_table", "p_table")'
 % 
 % % snimi rezultate i heatmap
-% save('step5_selected_corr.mat', 'sel_all_tbl','R_table','P_table');
+% save('significant_corr.mat', 'sel_all_tbl','R_table','P_table');
 % 
 % figure
 % h = heatmap(names, names, R)
@@ -124,6 +120,9 @@ mr_table = GHSI_2019_table(:,1); %[output:66d0367b]
 %[metadata:view]
 %   data: {"layout":"onright"}
 %---
-%[output:66d0367b]
-%   data: {"dataType":"tabular","outputData":{"columnNames":["mr"],"columns":1,"dataTypes":["double"],"header":"85×1 table","name":"mr_table","rowNames":["Afghanistan","Andorra","Armenia","Australia","Austria","Azerbaijan","Belgium","Bangladesh","Bosnia and Herzegovina","Bolivia","Central African Republic","Canada","Switzerland","Chile"],"rows":85,"type":"table","value":[["-3.2619"],["-2.7374"],["-3.8918"],["-4.2474"],["-3.1912"],["-4.2120"],["-1.6582"],["-4.2155"],["-3.4692"],["-2.7235"],["-4.3258"],["-2.4089"],["-2.7658"],["-3.5657"]]}}
+%[output:245056f4]
+%   data: {"dataType":"tabular","outputData":{"columnNames":["GHSI_2019_PC1","GHSI_2021_PC1","bolesti_PC1","prosperitet_PC1","starost_PC1","OB","IN","ON","mr"],"columns":9,"dataTypes":["double","double","double","double","double","double","double","double","double"],"header":"85×9 table","name":"significant_table","rowNames":["Afghanistan","Andorra","Armenia","Australia","Austria","Azerbaijan","Belgium","Bangladesh","Bosnia and Herzegovina","Bolivia","Central African Republic","Canada","Switzerland","Chile"],"rows":85,"type":"table","value":[["-2.3186","-2.7667","2.8608","-3.7945","-2.6558","-3.4782","-6","3.6109","-3.2619"],["-2.5983","-1.7468","-1.0309","1.7314","2.9558","-2.5096","-5.3479","3.4965","-2.7374"],["0.6247","2.8001","1.2348","-0.6902","-0.1324","-2.8736","-6.6633","3.4965","-3.8918"],["4.5557","4.2700","-2.7207","3.0247","1.2173","-2.1861","-6.0498","3.2189","-4.2474"],["2.1461","2.2162","-1.2663","1.5995","2.1791","-2.8792","-6.0745","2.5649","-3.1912"],["-2.2499","-1.6122","0.7208","-0.9034","-0.7336","-2.8904","-6","3.2958","-4.2120"],["2.5862","2.5471","-1.7264","2.6361","1.9869","-2.7600","-5.5946","3.0910","-1.6582"],["-2.1041","-1.5752","1.5905","-2.5601","-1.9221","-3.5351","-6.2610","3.9120","-4.2155"],["-0.5596","-1.4433","1.2776","-0.2231","0.5194","-2.9957","-6.4420","3.5835","-3.4692"],["-1.7197","-2.5649","-0.5427","-1.1698","-1.1473","-2.8736","-6","3.8067","-2.7235"],["-3.0693","-4.8602","2.3619","-3.8174","-2.2763","-3.4144","-7.2595","4.3438","-4.3258"],["4.5760","4.1432","-3.1466","2.5759","1.1935","-2.1401","-6.1968","2.4849","-2.4089"],["3.4524","2.5558","-2.2460","2.3274","1.8862","-2.9124","-6.5803","2.5649","-2.7658"],["1.9304","2.0366","-0.7260","0.6245","0.6427","-2.2925","-6.3561","2.9444","-3.5657"]]}}
+%---
+%[output:1f508243]
+%   data: {"dataType":"matrix","outputData":{"columns":9,"header":"1×9 cell array","name":"names","rows":1,"type":"cell","value":[["'GHSI_2019_PC1'","'GHSI_2021_PC1'","'bolesti_PC1'","'prosperitet_PC1'","'starost_PC1'","'OB'","'IN'","'ON'","'mr'"]]}}
 %---
