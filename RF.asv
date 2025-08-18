@@ -1,0 +1,19 @@
+clear
+load("tbl_2019.mat");
+load("tbl_2021.mat");
+
+%[text] ## Izdvajanje varijabli
+X_2019 = tbl_2019{:, 1:end-1};
+Y_2019 = tbl_2019{:,end};
+Vars_2019 = tbl_2019.Properties.VariableNames(1:end-1);
+
+X_2021 = tbl_2021{:, 1:end-1};
+Y_2021 = tbl_2021{:,end};
+Vars_2021 = tbl_2021.Properties.VariableNames(1:end-1);
+
+
+%[appendix]{"version":"1.0"}
+%---
+%[metadata:view]
+%   data: {"layout":"onright"}
+%---
