@@ -1,7 +1,7 @@
 %[text] ## Ucitavanje podataka
 clear
-load("GHSI_2021_transformed_data.mat");
-load("PCA_data.mat");
+load("data/GHSI_2021_transformed_data.mat");
+load("data/PCA_data.mat");
 
 %[text] ## Korelaciona analiza izmedju rezultat PCA i odgovarajucih podataka
 pocetni_podaci = {GHSI_2021, GHSI_2019, starost, bolesti, prosperitet};
@@ -39,7 +39,7 @@ for i = 1:length(nazivi)
     varlist_PCmr{end+1} = sprintf('R_%s_table', nazivi{i}); 
     varlist_PCmr{end+1} = sprintf('P_%s_table', nazivi{i});
 end
-save('PC_vs_mr_tables.mat', varlist_PCmr{:});
+save('data/PC_vs_mr_tables.mat', varlist_PCmr{:});
 %[text] ## Korelacija varijabli koje nisu usle u PCA i m/r
 % izdvajanje kolona koje nisu usli u PCA analizu
 vars_noPCA = {'IE','RE','OB','SM','IN','BCG','ON'};
@@ -48,7 +48,7 @@ x_noPCA = GHSI_2019_table(:, idx);
 
 
 for i = 1:length(vars_noPCA)
-    xi = GHSI_2019_table{:, idx(i)};      % numeric kolona
+    xi = GHSI_2019_table{:, idx(i)};      
     X  = [xi, m_r]; 
     nazivi_noPCmr = [string(vars_noPCA{i}), 'mr'];
     [r, p] = corr(X);
@@ -60,7 +60,7 @@ for i = 1:length(vars_noPCA)
     varlist_noPCmr{end+1} = sprintf('R_%s_table', vars_noPCA{i}); 
     varlist_noPCmr{end+1} = sprintf('P_%s_table', vars_noPCA{i});
 end
-save('noPC_vs_mr_tables.mat', varlist_noPCmr{:});
+save('data/noPC_vs_mr_tables.mat', varlist_noPCmr{:});
 
 %[text] ## Statisticki znacajno korelisane PC i varijable sa m/r
 % statisticki znacajne PC
@@ -104,7 +104,7 @@ names = significant_table.Properties.VariableNames;
 r_table = array2table(r, VariableNames=names, RowNames=names);
 p_table = array2table(p, VariableNames=names, RowNames=names);
 
-save('significant_corr.mat', "significant_table", "r_table", "p_table");
+save('data/significant_corr.mat', "significant_table", "r_table", "p_table");
 
 figure; %[output:2cc45f2c]
 h = heatmap(names, names, r); %[output:2cc45f2c]
@@ -115,11 +115,11 @@ h.Colormap = flipud(redbluecmap); %[output:2cc45f2c]
 %[text] ## Formiranje 2019 i 2021 tabela
 PCs_for2019 = signifcant_PCS(~startsWith(signifcant_PCS,'GHSI_2021'));
 tbl_2019 = [all_PCs(:, cellstr(PCs_for2019)), significant_noPC_table , mr_table];
-save('tbl_2019.mat', 'tbl_2019');
+save('data/tbl_2019.mat', 'tbl_2019');
 
 PCs_for2021 = signifcant_PCS(~startsWith(signifcant_PCS, 'GHSI_2019'));
 tbl_2021 = [all_PCs(:, cellstr(PCs_for2021)), significant_noPC_table, mr_table];
-save('tbl_2021.mat', "tbl_2021");
+save('data/tbl_2021.mat', "tbl_2021");
 
 %[appendix]{"version":"1.0"}
 %---

@@ -1,6 +1,7 @@
 %[text] ## Ucitavanje prethodno transformisanih podataka
 clear
-load("GHSI_2021_transformed_data.mat");
+load("data/GHSI_2021_transformed_data.mat");
+load("funkcije\pcs_treshold.m");
 GHSI_2019_matrix = table2array(GHSI_2019_table);
 
 % Grupisanje podataka iz prethodno transformisanih podataka za 2019. i
@@ -41,7 +42,7 @@ starost_PCS = array2table(rezultati_PCA.starost.score, "VariableNames", {'staros
 bolesti_PCS = array2table(rezultati_PCA.bolesti.score, "VariableNames", {'bolesti_PC1', 'bolesti_PC2'});
 
 % Cuvanje tabela za datu upotrebu
-save('PCA_data.mat', 'rezultati_PCA', 'GHSI_2019_PCS', 'GHSI_2021_PCS', 'prosperitet_PCS', 'starost_PCS', 'bolesti_PCS', 'GHSI_2021', 'GHSI_2019', 'bolesti', 'starost', 'prosperitet')
+save('data/PCA_data.mat', 'rezultati_PCA', 'GHSI_2019_PCS', 'GHSI_2021_PCS', 'prosperitet_PCS', 'starost_PCS', 'bolesti_PCS', 'GHSI_2021', 'GHSI_2019', 'bolesti', 'starost', 'prosperitet')
 
 %[appendix]{"version":"1.0"}
 %---
